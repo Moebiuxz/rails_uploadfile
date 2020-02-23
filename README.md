@@ -1,24 +1,79 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Primero agregar las siguientes gemas al Gemfile
+- gem 'dropzonejs-rails'
+- gem 'carrierwave'
+- gem 'jquery-rails'
 
-Things you may want to cover:
+Realizar un 'bundle install'
 
-* Ruby version
+Añadir al application.js
 
-* System dependencies
+``//= require dropzone ``
 
-* Configuration
+Añadir al application.css
 
-* Database creation
+``*= require dropzone/dropzone``
 
-* Database initialization
+Generar el media uploader
 
-* How to run the test suite
+``rails g uploader media``
 
-* Services (job queues, cache servers, search engines, etc.)
+Crear el modelo
 
-* Deployment instructions
+``rails g model media file_name:string``
+```ruby
+class Media < ActiveRecord::Base
+    mount_uploader :file_name, MediaUploader
+end
+```
 
-* ...
+
+Crear el controlador
+
+``rails g controller media_contents``
+
+```ruby
+class MediaContentsController < ApplicationController
+  def create
+    @media = Media.new(file_name: params[:file])
+    if @media.save!
+      respond_to do |format|
+        format.json{ render :json => @media }
+      end
+    end
+  end
+end
+```
+
+Añadir la ruta
+
+``resources :media_contents``
+
+Agregar el formulario a la vista
+
+```ruby
+<%= form_tag '/media_contents', method: :post, class: "dropzone", id: "media-dropzone" do %>
+  <input name="authenticity_token" type="hidden" value="<%= form_authenticity_token %>" />
+  <div class="fallback">
+    <%= file_field_tag "media", multiple: true%>
+  </div>
+<% end %>
+```
+
+Para capturar la respuesta con js
+
+```javascript
+<script>
+    Dropzone.autoDiscover = false;
+    $(function() {
+        var mediaDropzone;
+        mediaDropzone = new Dropzone("#media-dropzone");
+        return mediaDropzone.on("success", function(file, responseText) {
+            var imageUrl;
+            imageUrl = responseText.file_name.url;
+            console.log(responseText);
+        });
+    });
+</script>
+```

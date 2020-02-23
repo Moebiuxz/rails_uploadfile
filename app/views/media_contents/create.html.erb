@@ -1,0 +1,6 @@
+<%= form_tag '/media_contents', method: :post, class: "dropzone", id: "media-dropzone" do %>
+  <input name="authenticity_token" type="hidden" value="<%= form_authenticity_token %>" />
+  <div class="fallback">
+    <%= file_field_tag "media", multiple: true%>
+  </div>
+<% end %>
